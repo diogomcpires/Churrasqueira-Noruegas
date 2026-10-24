@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
 <head>
-<meta name="color-scheme" content="light"><meta charset="UTF-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="only light">
+<meta name="supported-color-schemes" content="light">
+<meta name="theme-color" content="#120f1f">
 <title>Churrasqueira Noruegas — Odivelas</title>
 <meta name="description" content="Churrasqueira Noruegas, em Odivelas, ao lado do C.C. Oceano. Grelhados no carvão, frango assado, ementa do dia no Instagram. 4,5★ com 486 avaliações. Take-away.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,8 +32,9 @@
     --font-script:'Caveat', cursive;
     --font-body:'Work Sans', sans-serif;
     --font-mono:'Space Mono', monospace;
-    color-scheme: light only;
+    color-scheme: only light;
   }
+  html{color-scheme: only light;}
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     font-family:var(--font-body);
@@ -38,6 +42,27 @@
     background:var(--paper);
     line-height:1.5;
     -webkit-font-smoothing:antialiased;
+    color-scheme: only light;
+  }
+  /* Lock every color to its light-mode value no matter what the device theme is set to */
+  @media (prefers-color-scheme: dark){
+    :root{
+      color-scheme: only light;
+      --charcoal:#120f1f;
+      --charcoal-2:#1a1630;
+      --charcoal-3:#241f3d;
+      --ember:#F4A502;
+      --ember-light:#FFC13D;
+      --ember-deep:#B06A00;
+      --paper:#f4efe3;
+      --paper-2:#fbf8f0;
+      --azul:#2E2A80;
+      --azul-light:#433EC2;
+      --brass:#D98C12;
+      --ink:#1c1830;
+      --ink-soft:#4a4566;
+    }
+    body{ background:var(--paper) !important; color:var(--ink) !important; }
   }
   img,video{max-width:100%; display:block;}
   a{color:inherit; text-decoration:none;}
