@@ -535,6 +535,46 @@
     border-top:1px dashed rgba(28,24,48,.2); padding-top:1.3rem;
   }
 
+  /* ---------- Ementa do Dia (muda sozinha a partir da folha Google) ---------- */
+  .ed [hidden]{display:none !important;}
+  .ed-live{display:flex; flex-wrap:wrap; align-items:center; gap:.5rem 1rem; margin-bottom:1.2rem;}
+  .ed-badge{
+    display:inline-flex; align-items:center; gap:.55rem; font-family:var(--font-mono); font-size:.72rem;
+    letter-spacing:.1em; text-transform:uppercase; font-weight:700; color:var(--ink);
+    background:var(--ember) linear-gradient(var(--ember),var(--ember)); padding:.38rem .85rem .38rem .75rem; border-radius:30px;
+  }
+  .ed-badge .dot{width:8px; height:8px; border-radius:50%; background:var(--ink); position:relative; flex-shrink:0;}
+  .ed-badge .dot::after{content:""; position:absolute; inset:-5px; border-radius:50%; background:rgba(28,24,48,.4); animation:dotPulse 1.8s ease-out infinite;}
+  .ed-date{font-family:var(--font-mono); font-size:.82rem; color:var(--ink); font-weight:700;}
+  .ed-list .menu-row{padding:.68rem 0; align-items:center; flex-wrap:nowrap;}
+  .ed-list .menu-row .name{font-size:1.06rem; font-weight:500; white-space:normal;}
+  .ed-tag{
+    font-family:var(--font-mono); font-size:.66rem; letter-spacing:.08em; text-transform:uppercase; font-weight:700;
+    color:var(--ink); background:var(--paper-2) linear-gradient(var(--paper-2),var(--paper-2)); border:1px solid var(--brass);
+    padding:.2rem .6rem; border-radius:20px; white-space:nowrap; flex-shrink:0;
+  }
+  @media (max-width:360px){
+    .ed-list .menu-row .leader{display:block; min-width:6px;}
+    .ed-list .menu-row .name{flex:1 1 auto;}
+  }
+  .ed-foot{
+    margin-top:1.5rem; display:flex; flex-wrap:wrap; gap:.4rem 1.4rem; align-items:center;
+    font-family:var(--font-mono); font-size:.76rem; color:var(--ink-soft);
+  }
+  .ed-foot a{color:var(--ember-deep); font-weight:700; text-decoration:none; border-bottom:1px dotted currentColor;}
+  .ed-aviso{
+    border:1px dashed rgba(28,24,48,.28); border-radius:12px; padding:1.3rem 1.5rem; max-width:62ch;
+    background:var(--paper-2) linear-gradient(var(--paper-2),var(--paper-2));
+  }
+  .ed-aviso strong{display:block; font-family:var(--font-display); font-weight:400; font-size:1.25rem; color:var(--ink); margin-bottom:.35rem; letter-spacing:.01em;}
+  .ed-aviso p{font-size:.95rem; color:var(--ink-soft); margin:0;}
+  .ed-aviso a{color:var(--ember-deep); font-weight:700; text-decoration:none; border-bottom:1px dotted currentColor;}
+  .ed-load{font-family:var(--font-mono); font-size:.82rem; color:var(--ink-soft); padding:.4rem 0 1rem;}
+  .ed-demo{
+    font-family:var(--font-mono); font-size:.72rem; color:var(--ink); margin:0 0 1rem;
+    background:rgba(244,165,2,.2); border:1px dashed var(--brass); border-radius:8px; padding:.5rem .8rem; max-width:62ch;
+  }
+
   /* ================= LOCALIZAÇÃO ================= */
   .loc-section{background:var(--charcoal) linear-gradient(var(--charcoal),var(--charcoal)); color:var(--paper); padding:100px 0; border-top:1px solid rgba(244,165,2,.1);}
   .loc-section .eyebrow{color:var(--brass); margin-bottom: 0.5rem; display: block;}
@@ -889,7 +929,35 @@
     </div>
 
     <!-- Especialidades do Dia -->
-    <div class="menu-panel active" data-panel="especialidades-dia">
+    <div class="menu-panel active ed" data-panel="especialidades-dia" id="ementa-dia">
+      <p class="ed-demo" id="ed-demo" hidden>Modo demonstração — os pratos marcados ficam guardados só neste navegador.</p>
+
+      <!-- A carregar (só aparece se a ementa automática estiver ligada) -->
+      <p class="ed-load" id="ed-load" hidden>A carregar a ementa de hoje…</p>
+
+      <!-- Ementa de hoje (preenchida automaticamente) -->
+      <div id="ed-vivo" hidden>
+        <div class="ed-live">
+          <span class="ed-badge"><span class="dot"></span>Ementa de hoje</span>
+          <span class="ed-date" id="ed-data"></span>
+        </div>
+        <div class="menu-cols ed-list" id="ed-lista" aria-live="polite"></div>
+        <div class="ed-foot">
+          <span id="ed-upd"></span>
+          <span>Para confirmar, ligue: <a href="tel:+351219341738">21 934 1738</a></span>
+        </div>
+      </div>
+
+      <!-- Ainda sem pratos marcados para hoje -->
+      <div id="ed-vazio" hidden>
+        <div class="ed-aviso">
+          <strong>Estamos a preparar a ementa de hoje</strong>
+          <p>Veja as novidades no nosso Instagram ou ligue-nos: <a href="tel:+351219341738">21 934 1738</a>.</p>
+        </div>
+      </div>
+
+      <!-- Lista normal (aparece sempre que a ementa automática não está ligada ou falha) -->
+      <div id="ed-estatico">
       <p class="menu-intro">Estas são as especialidades que vão mudando consoante o dia — a nossa ementa do dia. Para ver o que está disponível hoje, com fotos e preços, siga o nosso Instagram.</p>
       <div class="menu-cols">
         <div class="menu-row"><span class="name">Bacalhau à Noruegas</span><span class="leader"></span><span class="price">Ementa do Dia</span></div>
@@ -903,6 +971,7 @@
         <div class="menu-row"><span class="name">Favas c/ entrecosto</span><span class="leader"></span><span class="price">Ementa do Dia</span></div>
         <div class="menu-row"><span class="name">Choco à lagareiro</span><span class="leader"></span><span class="price">Ementa do Dia</span></div>
         <div class="menu-row"><span class="name">Polvo à lagareiro</span><span class="leader"></span><span class="price">Ementa do Dia</span></div>
+      </div>
       </div>
       <div style="margin-top:2.2rem; text-align:center;">
         <a href="https://www.instagram.com/churrasqueiranoruegas/" target="_blank" rel="noopener" class="btn btn-instagram">Ver Ementa de Hoje no Instagram</a>
@@ -1231,6 +1300,109 @@
       video.addEventListener('webkitendfullscreen', function(){ video.controls = false; });
     }
   });
+</script>
+
+<!-- Ementa do Dia automática: lê a folha Google (URL em ementa-config.js). Sem URL, mostra a lista normal. -->
+<script src="ementa-config.js"></script>
+<script>
+(function(){
+  var API = String(window.EMENTA_API || '').trim();
+  var DEMO = false;
+  try { DEMO = new URLSearchParams(location.search).get('demo') === '1'; } catch(e) {}
+  if (!API && !DEMO) return;                       // ementa automática desligada → lista normal
+
+  var IDS = ['ed-load','ed-vivo','ed-vazio','ed-estatico'];
+  function $(id){ return document.getElementById(id); }
+  function show(which){ IDS.forEach(function(id){ var el = $(id); if (el) el.hidden = (id !== which); }); }
+
+  var DIAS = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+  var MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  function fmtData(iso){
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+    if (!m) return '';
+    var d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+    var t = DIAS[d.getUTCDay()] + ', ' + (+m[3]) + ' de ' + MESES[+m[2] - 1];
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+  function hhmm(iso){
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    try { return d.toLocaleTimeString('pt-PT', {hour:'2-digit', minute:'2-digit', timeZone:'Europe/Lisbon'}); }
+    catch(e) { return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+  }
+  function lisbonToday(){
+    try {
+      var s = new Intl.DateTimeFormat('en-CA', {timeZone:'Europe/Lisbon', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date());
+      return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null;
+    } catch(e) { return null; }
+  }
+
+  /* ---- modo demonstração (?demo=1): guarda no navegador, partilhado com ementa-admin.html?demo=1 ---- */
+  var DKEY = 'noruegas_ementa_demo_v1';
+  function demoEstado(){
+    var o = {dia:'', ativos:[], extras:[], atualizado:null};
+    try { var s = JSON.parse(localStorage.getItem(DKEY)); if (s && typeof s === 'object') o = s; } catch(e) {}
+    var hoje = lisbonToday() || new Date().toISOString().slice(0, 10);
+    var valido = o.dia === hoje;
+    var nomes = (window.EMENTA_PRATOS_DEMO || []).concat(o.extras || []);
+    return {ok:true, hoje:hoje, novoDia:!valido, atualizado:o.atualizado || null,
+            pratos:nomes.map(function(n){ return {nome:n, ativo:valido && (o.ativos || []).indexOf(n) > -1}; })};
+  }
+
+  function pedir(){
+    if (DEMO) return Promise.resolve(demoEstado());
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = setTimeout(function(){ if (ctrl) ctrl.abort(); }, 9000);
+    var url = API + (API.indexOf('?') > -1 ? '&' : '?') + 't=' + Date.now();
+    return fetch(url, {cache:'no-store', signal: ctrl ? ctrl.signal : undefined})
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        clearTimeout(timer);
+        if (!j || j.ok !== true || !Array.isArray(j.pratos)) throw new Error('resposta inválida');
+        return j;
+      }, function(err){ clearTimeout(timer); throw err; });
+  }
+
+  var ultima = null;       // assinatura do último estado mostrado (evita piscar)
+  function render(st){
+    var hoje = lisbonToday();
+    var obsoleto = !!(hoje && st.hoje && hoje !== st.hoje);          // resposta de outro dia → não mostrar
+    var ativos = obsoleto ? [] : st.pratos.filter(function(p){ return p.ativo === true; });
+    var sig = JSON.stringify([st.hoje, st.atualizado, ativos.map(function(p){ return p.nome; })]);
+    if (sig === ultima) return;
+    ultima = sig;
+
+    if (!ativos.length) { show('ed-vazio'); return; }
+
+    var lista = $('ed-lista');
+    lista.textContent = '';
+    ativos.forEach(function(p){
+      var row = document.createElement('div'); row.className = 'menu-row';
+      var nome = document.createElement('span'); nome.className = 'name'; nome.textContent = p.nome;
+      var lead = document.createElement('span'); lead.className = 'leader';
+      var tag = document.createElement('span'); tag.className = 'ed-tag'; tag.textContent = 'Hoje';
+      row.appendChild(nome); row.appendChild(lead); row.appendChild(tag);
+      lista.appendChild(row);
+    });
+    $('ed-data').textContent = fmtData(st.hoje);
+    var h = st.atualizado ? hhmm(st.atualizado) : '';
+    $('ed-upd').textContent = h ? ('Atualizado às ' + h) : '';
+    show('ed-vivo');
+  }
+
+  function atualizar(primeira){
+    return pedir().then(render, function(){
+      if (primeira) { ultima = null; show('ed-estatico'); }          // falhou → lista normal (nunca "tudo disponível")
+    });
+  }
+
+  if (DEMO && $('ed-demo')) $('ed-demo').hidden = false;
+  show('ed-load');
+  atualizar(true);
+
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) atualizar(false); });
+  setInterval(function(){ if (!document.hidden) atualizar(false); }, 120000);
+})();
 </script>
 
 </body>
