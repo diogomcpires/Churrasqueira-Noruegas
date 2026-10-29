@@ -91,6 +91,21 @@
   .prato[aria-checked="true"] .estado{color:var(--ember-deep); font-weight:700;}
   .prato:focus-visible{outline:3px solid var(--brass); outline-offset:2px;}
   .prato.a-gravar .estado::after{content:" …";}
+  /* linha = prato + botão de remover */
+  .linha{display:flex; gap:8px; align-items:stretch;}
+  .linha .prato{flex:1; min-width:0;}
+  .lixo{
+    width:54px; flex-shrink:0; border-radius:12px; border:2px solid rgba(179,38,30,.28); cursor:pointer;
+    background:#fff linear-gradient(#fff,#fff); color:var(--erro); display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:.78rem; transition:width .18s ease, background .15s ease, color .15s ease;
+  }
+  .lixo svg{width:20px; height:20px;}
+  .lixo:active{transform:scale(.96);}
+  .lixo.confirmar{width:98px; background:var(--erro) linear-gradient(var(--erro),var(--erro)); color:#fff; border-color:var(--erro);}
+  .lixo[disabled]{opacity:.5; pointer-events:none;}
+  .lixo:focus-visible{outline:3px solid var(--brass); outline-offset:2px;}
+  @media (max-width:440px){ .prato[aria-checked="false"] .estado{display:none;} .prato{gap:10px; padding:12px;} }
+
 
   .add{display:flex; gap:8px; margin-top:16px;}
   .add input{flex:1; min-width:0; min-height:52px; padding:0 14px; border-radius:12px; border:2px solid rgba(28,24,48,.18); background:#fff linear-gradient(#fff,#fff); font-size:1rem;}
@@ -160,7 +175,7 @@
       </div>
     </div>
     <div class="aviso-dia" id="aviso-dia" hidden><span>☀️</span><span><b>Novo dia!</b> Marque os pratos que há hoje.</span></div>
-    <p class="ajuda">Toque num prato para o pôr (ou tirar) na ementa de hoje. Grava sozinho.</p>
+    <p class="ajuda" id="ajuda">Toque num prato para o pôr (ou tirar) na ementa de hoje. Grava sozinho. O caixote 🗑 apaga o prato da lista.</p>
     <div class="lista" id="lista" role="group" aria-label="Pratos"></div>
 
     <form class="add" id="form-add" autocomplete="off">
@@ -218,12 +233,12 @@
 
   /* ---------- modo demonstração (imita o Apps Script, no navegador) ---------- */
   function demoLoad(){
-    try { var o = JSON.parse(ls(true, DKEY)); if (o && typeof o === 'object') return {dia:o.dia || '', ativos:o.ativos || [], extras:o.extras || [], atualizado:o.atualizado || null}; } catch(e) {}
-    return {dia:'', ativos:[], extras:[], atualizado:null};
+    try { var o = JSON.parse(ls(true, DKEY)); if (o && typeof o === 'object') return {dia:o.dia || '', ativos:o.ativos || [], extras:o.extras || [], removidos:o.removidos || [], atualizado:o.atualizado || null}; } catch(e) {}
+    return {dia:'', ativos:[], extras:[], removidos:[], atualizado:null};
   }
   function demoEstado(){
     var o = demoLoad(), hoje = lisbonToday() || new Date().toISOString().slice(0, 10), valido = o.dia === hoje;
-    var nomes = (window.EMENTA_PRATOS_DEMO || []).concat(o.extras);
+    var nomes = (window.EMENTA_PRATOS_DEMO || []).concat(o.extras).filter(function(n){ return o.removidos.indexOf(n) < 0; });
     return {ok:true, hoje:hoje, novoDia:!valido, atualizado:o.atualizado,
             pratos:nomes.map(function(n){ return {nome:n, ativo:valido && o.ativos.indexOf(n) > -1}; })};
   }
@@ -232,7 +247,7 @@
     if (b.acao === 'verificar') return demoEstado();
     var o = demoLoad(), hoje = lisbonToday() || new Date().toISOString().slice(0, 10);
     if (o.dia !== hoje) { o.dia = hoje; o.ativos = []; }
-    var todos = (window.EMENTA_PRATOS_DEMO || []).concat(o.extras);
+    var todos = (window.EMENTA_PRATOS_DEMO || []).concat(o.extras).filter(function(n){ return o.removidos.indexOf(n) < 0; });
     function existe(n){ n = limparNome(n).toLowerCase(); for (var i = 0; i < todos.length; i++) if (limparNome(todos[i]).toLowerCase() === n) return todos[i]; return null; }
     if (b.acao === 'toggle') {
       var nome = existe(b.nome); if (!nome) return {ok:false, erro:'Prato não encontrado.'};
@@ -244,7 +259,14 @@
       var novo = limparNome(b.nome);
       if (!novo) return {ok:false, erro:'Escreva o nome do prato.'};
       if (existe(novo)) return {ok:false, erro:'Esse prato já está na lista.', codigo:'duplicado'};
-      o.extras.push(novo); if (b.ativo !== false) o.ativos.push(novo);
+      o.removidos = o.removidos.filter(function(x){ return limparNome(x).toLowerCase() !== novo.toLowerCase(); });
+      if ((window.EMENTA_PRATOS_DEMO || []).indexOf(novo) < 0) o.extras.push(novo);
+      if (b.ativo !== false) o.ativos.push(novo);
+    } else if (b.acao === 'remover') {
+      var r = existe(b.nome); if (!r) return {ok:false, erro:'Prato não encontrado.'};
+      o.extras = o.extras.filter(function(x){ return x !== r; });
+      o.ativos = o.ativos.filter(function(x){ return x !== r; });
+      if ((window.EMENTA_PRATOS_DEMO || []).indexOf(r) > -1) o.removidos.push(r);
     }
     o.atualizado = new Date().toISOString();
     ls(false, DKEY, JSON.stringify(o));
@@ -271,6 +293,7 @@
 
   /* ---------- estado e desenho ---------- */
   var pin = null, estado = null, pendentes = 0;
+  var LIXO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>';
 
   var toastT;
   function toast(txt, tipo){
@@ -300,7 +323,13 @@
       var sw = document.createElement('span'); sw.className = 'sw'; sw.setAttribute('aria-hidden', 'true');
       b.appendChild(nm); b.appendChild(es); b.appendChild(sw);
       b.addEventListener('click', function(){ alternar(p.nome); });
-      lista.appendChild(b);
+      var rm = document.createElement('button');
+      rm.type = 'button'; rm.className = 'lixo'; rm.innerHTML = LIXO;
+      rm.setAttribute('aria-label', 'Apagar ' + p.nome + ' da lista');
+      rm.addEventListener('click', function(){ remover(p.nome, rm); });
+      var linha = document.createElement('div'); linha.className = 'linha';
+      linha.appendChild(b); linha.appendChild(rm);
+      lista.appendChild(linha);
     });
   }
 
@@ -344,6 +373,26 @@
       p.ativo = !novo; p.gravar = false; desenhar();
       toast('Sem ligação — não gravou. Tente outra vez.', 'erro');
     });
+  }
+
+  var rmT = null;
+  function repor(btn){ btn.disabled = false; btn.classList.remove('confirmar'); btn.innerHTML = LIXO; }
+  function remover(nome, btn){
+    if (!btn.classList.contains('confirmar')) {                      // 1.º toque pede confirmação
+      document.querySelectorAll('.lixo.confirmar').forEach(repor);
+      btn.classList.add('confirmar'); btn.textContent = 'Apagar?';
+      clearTimeout(rmT); rmT = setTimeout(function(){ repor(btn); }, 3500);
+      return;
+    }
+    clearTimeout(rmT); btn.disabled = true; btn.textContent = '…';
+    enviar({acao:'remover', nome:nome}).then(function(j){
+      if (j && j.ok) { aceitar(j); toast(nome + ' apagado da lista', 'ok'); }
+      else {
+        repor(btn);
+        if (j && (j.codigo === 'acao' || j.erro === 'Ação desconhecida.')) toast('Falta atualizar o script no Google (Code.gs) para poder apagar.', 'erro');
+        else erroServidor(j);
+      }
+    }, function(){ repor(btn); toast('Sem ligação — não apagou. Tente outra vez.', 'erro'); });
   }
 
   /* ---------- ecrãs ---------- */
